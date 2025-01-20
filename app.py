@@ -1,17 +1,16 @@
-# app.py
 import streamlit as st
 import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
 
-# Load the pre-trained model
+# Load the pre-trained model and TF-IDF vectorizer
 @st.cache_resource
-def load_model():
+def load_model_and_vectorizer():
     try:
         model = joblib.load("logistic_regression_model.joblib")  # Your saved model
-        return model
+        vectorizer = joblib.load("tfidf_vectorizer.joblib")  # Your saved vectorizer
+        return model, vectorizer
     except FileNotFoundError as e:
-        st.error("Required file 'logistic_regression_model.joblib' not found. Please ensure it is in the correct directory.")
+        st.error("Required files not found. Please ensure 'logistic_regression_model.joblib' and 'tfidf_vectorizer.joblib' are in the correct directory.")
         st.stop()
 
 # Streamlit App
@@ -26,12 +25,11 @@ if st.button("Classify"):
     if not user_input.strip():
         st.warning("Please enter some text to classify.")
     else:
-        # Load model
-        model = load_model()
+        # Load model and vectorizer
+        model, vectorizer = load_model_and_vectorizer()
 
-        # Transform user input using inline TF-IDF vectorization
-        tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7, max_features=5000)
-        user_input_tfidf = tfidf_vectorizer.fit_transform([user_input])
+        # Transform user input using the pre-trained TF-IDF vectorizer
+        user_input_tfidf = vectorizer.transform([user_input])
 
         # Predict and get confidence scores
         prediction = model.predict(user_input_tfidf)[0]
