@@ -1,42 +1,43 @@
 # app.py
 import streamlit as st
 import pandas as pd
-import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
 import joblib
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Load pre-trained model and vectorizer
-@st.cache
+@st.cache_resource
 def load_model():
-    return joblib.load('logistic_model.pkl'), joblib.load('tfidf_vectorizer.pkl')
+    model = joblib.load('logistic_regression_model.joblib')
+    vectorizer = joblib.load('tfidf_vectorizer.joblib')
+    return model, vectorizer
 
-# Title and description
+# Streamlit App Title
 st.title("Real/Fake News Detection")
-st.write("This is a web application that classifies news articles as Real or Fake.")
+st.write("This web app classifies news articles as Real or Fake using a pre-trained Logistic Regression model.")
 
-# Input form
-user_input = st.text_area("Enter the news content here:", "")
+# Input text area for user input
+user_input = st.text_area("Enter news content:", "")
 
 if st.button("Classify"):
     if not user_input.strip():
-        st.warning("Please enter news content for classification.")
+        st.warning("Please enter news content to classify.")
     else:
         # Load model and vectorizer
         model, vectorizer = load_model()
 
-        # Preprocess and predict
+        # Preprocess input and predict
         user_input_tfidf = vectorizer.transform([user_input])
         prediction = model.predict(user_input_tfidf)[0]
         confidence = model.predict_proba(user_input_tfidf)[0]
 
         # Display results
         if prediction == 1:
-            st.error(f"This news is classified as **Fake News** with {confidence[1]*100:.2f}% confidence.")
+            st.error(f"This news is classified as **Fake News** with {confidence[1] * 100:.2f}% confidence.")
         else:
-            st.success(f"This news is classified as **Real News** with {confidence[0]*100:.2f}% confidence.")
+            st.success(f"This news is classified as **Real News** with {confidence[0] * 100:.2f}% confidence.")
 
-# Additional UI
+# Sidebar Information
 st.sidebar.header("About the App")
-st.sidebar.info("This app uses a pre-trained Logistic Regression model and TF-IDF vectorization for classifying news articles.")
+st.sidebar.info(
+    "This app uses a Logistic Regression model trained on TF-IDF vectorized data to classify news articles. It demonstrates the power of NLP and Machine Learning in detecting fake news."
+)
