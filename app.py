@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -5,9 +6,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 # Load the pre-trained model and vectorizer
 @st.cache_resource
 def load_model():
-    model = joblib.load("logistic_regression_model.joblib")  # Your saved model
-    vectorizer = joblib.load("tfidf_vectorizer.joblib")  # Your saved TF-IDF vectorizer
-    return model, vectorizer
+    try:
+        model = joblib.load("logistic_regression_model.joblib")  # Your saved model
+        vectorizer = joblib.load("tfidf_vectorizer.joblib")  # Your saved TF-IDF vectorizer
+        return model, vectorizer
+    except FileNotFoundError as e:
+        st.error("Required files not found. Please ensure 'logistic_regression_model.joblib' and 'tfidf_vectorizer.joblib' are in the correct directory.")
+        st.stop()
 
 # Streamlit App
 st.title("Real/Fake News Detection")
@@ -41,5 +46,5 @@ if st.button("Classify"):
 st.sidebar.header("About")
 st.sidebar.info(
     "This app uses a Logistic Regression model trained with TF-IDF vectorized data. "
-    "It is designed to demonstrate the application of machine learning for detecting fake news."
+    "It demonstrates the application of machine learning for detecting fake news."
 )
